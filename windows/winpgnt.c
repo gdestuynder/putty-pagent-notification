@@ -860,6 +860,21 @@ static void *get_keylist2(int *length)
     return ret;
 }
 
+/* Show a notification */
+static void ShowNotification(char *fingerprint, char *comment)
+{
+    NOTIFYICONDATA tnid = {};
+    tnid.cbSize = sizeof(tnid);
+    tnid.hWnd = hwnd;
+    tnid.uFlags = NIF_INFO;
+    tnid.uID = 1;
+
+    snprintf(tnid.szInfo, sizeof(tnid.szInfo), "%s: %s", fingerprint, comment);
+    strcpy(tnid.szInfoTitle, "Pageant authorized access to your key");
+
+    Shell_NotifyIcon(NIM_MODIFY, &tnid);
+}
+
 /*
  * This is the main agent function that answers messages.
  */
@@ -1028,6 +1043,7 @@ static void answer_msg(void *msg)
 	    ret[4] = SSH2_AGENT_SIGN_RESPONSE;
 	    PUT_32BIT(ret + 5, siglen);
 	    memcpy(ret + 5 + 4, signature, siglen);
+	    ShowNotification(key->alg->fingerprint(key->data), key->comment);
 	    sfree(signature);
 	}
 	break;
